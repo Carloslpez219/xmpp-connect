@@ -1,0 +1,7 @@
+{
+  "name": "XMPP connect",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
