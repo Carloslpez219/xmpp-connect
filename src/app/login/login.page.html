@@ -1,0 +1,52 @@
+<ion-content>
+  <div class="container">
+    <div class="header">
+    </div>
+
+  <span class="screen__background__shape screen__background__shape1"></span>
+  <span class="screen__background__shape screen__background__shape2"></span>
+  <span class="screen__background__shape screen__background__shape3"></span>
+  <span class="screen__background__shape screen__background__shape4"></span>
+    <ion-card class="body animate__animated animate__bounceInDown">
+      <div class="img">
+        <img src="../../../assets/bowpi.png" style="width: 100%;" class="animate__animated animate__bounce">
+      </div>
+      <br>
+      <br>
+      <form (ngSubmit)="login()" [formGroup]="loginForm">
+        <ion-list>
+          <ion-item mode="md">
+            <ion-icon slot="start" name="person-circle-outline"></ion-icon>
+            <ion-input placeholder="User" type="name" clearOnEdit="true" clearInput formControlName="nombre">
+            </ion-input>
+          </ion-item>
+          <div class="errors" *ngIf="nombre!.invalid && (nombre!.dirty || nombre!.touched)">
+            <span *ngIf="nombre!.errors!['required']">
+              <ion-label class="error-container">Este campo es obligatorio</ion-label>
+            </span>
+          </div>
+          <ion-item mode="md">
+            <ion-icon slot="start" name="lock-open"></ion-icon>
+            <ion-input placeholder="Password" type="password" clearOnEdit="true" clearInput formControlName="password">
+            </ion-input>
+          </ion-item>
+          <div class="errors" *ngIf="password!.invalid && (password!.dirty || password!.touched)">
+            <span *ngIf="password!.errors!['required']">
+              <ion-label class="error-container">Este campo es obligatorio</ion-label>
+            </span>
+          </div>
+        </ion-list>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-button expand="block" class="button-1" type="submit" [disabled]="!loginForm.valid">Login
+                <ion-icon slot="start" color="white" name="enter-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <p class="ion-text-center" style="margin-top: 15px; color: rgb(175, 174, 174); font-size: 14px;">¿No tienes una cuenta?&nbsp;&nbsp;<a>Crea una fácil</a></p>
+      </form>
+    </ion-card>
+  </div>
+</ion-content>
