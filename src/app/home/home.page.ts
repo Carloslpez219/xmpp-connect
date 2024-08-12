@@ -18,6 +18,7 @@ export class HomePage implements OnInit{
   constructor(private xmppService: XmppService) { }
 
   ngOnInit() {
+    this.sendMessageToMor21116();
     // Intentar conectar al servidor sin autenticación
     // this.xmppService.connect('lop21666@alumchat.lol', '123456', this.onConnect.bind(this));
   }
@@ -51,8 +52,8 @@ export class HomePage implements OnInit{
   }
 
   sendMessageToMor21116() {
-    const recipient = 'ram21600@alumchat.lol';
-    const message = 'Hola, este es un mensaje de prueba.';
+    const recipient = 'prueba_carrillo@alumchat.lol';
+    const message = 'CR7';
     this.xmppService.sendMessage(recipient, message);
   }
 

@@ -35,3 +35,23 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+.errors-contact {
+    background: #F2DEDE;
+    border-radius: 7px;
+    color: #66615B;
+    padding: 10px 15px 15px 15px;
+    margin: 0 auto 10px auto;
+    width: 90%;
+    text-align: left;
+  }
+  
+  .errors {
+    background: #F2DEDE;
+    border-radius: 7px;
+    color: #66615B;
+    padding: 10px 15px 15px 15px;
+    margin: -12px auto 10px auto;
+    width: 98%;
+    text-align: left;
+  }
