@@ -13,6 +13,11 @@
       </div>
       <br>
       <br>
+
+
+    <div *ngIf="land">
+
+    
       <form (ngSubmit)="login()" [formGroup]="loginForm">
         <ion-list>
           <ion-item mode="md">
@@ -45,8 +50,73 @@
             </ion-col>
           </ion-row>
         </ion-grid>
-        <p class="ion-text-center" style="margin-top: 15px; color: rgb(175, 174, 174); font-size: 14px;">¿No tienes una cuenta?&nbsp;&nbsp;<a>Crea una fácil</a></p>
+        <p class="ion-text-center" style="margin-top: 15px; color: rgb(175, 174, 174); font-size: 14px;">¿No tienes una cuenta?&nbsp;&nbsp;<a (click)="change()">Crea una facil</a></p>
       </form>
+
+    </div>
+
+      <div *ngIf="!land">
+
+        <form (ngSubmit)="registerUser()" [formGroup]="registerForm">
+    
+          <ion-list>
+            <ion-item mode="md">
+              <ion-icon slot="start" name="person-circle-outline"></ion-icon>
+              <ion-input placeholder="User" type="name" clearOnEdit="true" clearInput formControlName="name">
+              </ion-input>
+            </ion-item>
+            <div class="errors" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
+              <span *ngIf="name?.errors!['required']">
+                <ion-label class="error-container">This field is required</ion-label>
+              </span>
+            </div>
+          </ion-list>
+    
+          <ion-list style="margin-top: -13px;">
+            <ion-item mode="md">
+              <ion-icon slot="start" name="mail-outline"></ion-icon>
+              <ion-input placeholder="Email" type="email" clearOnEdit="true" clearInput formControlName="correo">
+              </ion-input>
+            </ion-item>
+            <div class="errors" *ngIf="correo?.invalid && (correo?.dirty || correo?.touched)">
+              <span *ngIf="correo?.errors!['required']">
+                <ion-label class="error-container">This field is required</ion-label>
+              </span>
+            </div>
+          </ion-list>
+    
+          <ion-list style="margin-top: -13px;">
+            <ion-item mode="md">
+              <ion-icon slot="start" name="lock-open"></ion-icon>
+              <ion-input placeholder="Password" type="password" clearOnEdit="true" clearInput formControlName="password1">
+              </ion-input>
+            </ion-item>
+            <div class="errors" *ngIf="password1?.invalid && (password1?.dirty || password1?.touched)">
+              <span *ngIf="password1?.errors!['required']">
+                <ion-label class="error-container">This field is required</ion-label>
+              </span>
+            </div>
+          </ion-list>
+    
+        <br>
+
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-button expand="block" class="button-1" type="submit" [disabled]="!registerForm.valid">Registrarse
+                <ion-icon slot="start" color="white" name="enter-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+    
+        <p class="ion-text-center" style="margin-top: 15px; color: rgb(175, 174, 174); font-size: 14px;">¿Ya tienes cuenta?&nbsp;&nbsp;<a (click)="change()">Login</a></p>
+    
+          </form>
+        </div>
+
+
+
     </ion-card>
   </div>
 </ion-content>

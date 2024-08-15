@@ -14,13 +14,15 @@ declare const Strophe: any;
 })
 export class HomePage implements OnInit{
   private data = inject(DataService);
+  contacts: any[] = [];
 
   constructor(private xmppService: XmppService) { }
 
   ngOnInit() {
-    this.sendMessageToMor21116();
-    // Intentar conectar al servidor sin autenticación
-    // this.xmppService.connect('lop21666@alumchat.lol', '123456', this.onConnect.bind(this));
+    this.xmppService.getRoster((roster: any[]) => {
+      this.contacts = roster;
+      console.log('Lista de contactos:', this.contacts);
+    }, this.onError.bind(this));
   }
 
   // onConnect(status: number) {
@@ -59,9 +61,6 @@ export class HomePage implements OnInit{
 
   // Métodos adicionales para probar otras funcionalidades
 
-  registerUser() {
-    this.xmppService.register('nuevoUsuario', 'password', 'alumchat.lol', this.onRegisterSuccess.bind(this), this.onError.bind(this));
-  }
 
   onRegisterSuccess() {
     console.log('Registro exitoso');

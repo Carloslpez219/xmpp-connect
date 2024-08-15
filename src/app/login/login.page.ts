@@ -15,20 +15,31 @@ declare const Strophe: any;
 export class LoginPage implements OnInit {
 
   loginForm: FormGroup;
+  registerForm: FormGroup;
   pattern: any = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   datosUsuario: any;
   data = null;
+  land = true;
+  color = 'danger';
+  valueBar = 0;
 
 
   constructor(private navCtrl: NavController, public loadingController: LoadingController, private alertService: AlertService,  private storage: Storage, private router: Router, private xmppService: XmppService) {
             this.storage.create();            
             this.loginForm = this.createFormGroup();
+            this.registerForm = this.createFormGroup2();
               }
-
 
   ngOnInit() {
   }
-               
+           
+  createFormGroup2() {
+    return new FormGroup({
+      name: new FormControl('', [Validators.required]),
+      correo: new FormControl('', [Validators.required]),
+      password1: new FormControl('', [Validators.required])
+    });
+  }
 
   createFormGroup() {
     return new FormGroup({
@@ -40,6 +51,13 @@ export class LoginPage implements OnInit {
   get nombre() { return this.loginForm.get('nombre'); }
   get password() { return this.loginForm.get('password'); }
 
+  get name() { return this.registerForm.get('name'); }
+  get correo() { return this.registerForm.get('correo'); }
+  get password1() { return this.registerForm.get('password1'); }
+
+  async change() {
+    this.land = !this.land;
+  }  
 
   async presentLoading() {
     const loading = await this.loadingController.create({
@@ -82,5 +100,25 @@ export class LoginPage implements OnInit {
       this.navCtrl.navigateRoot('/');
     }
   }
+
+  async onError(error: any) {
+    this.data = null;
+    this.storage.clear();
+    await this.loadingController.dismiss();
+    this.alertService.presentToast(error, 'danger', 3000);
+  }
+
+  async registerUser() {
+    this.presentLoading();
+    await this.xmppService.signup(this.registerForm.value.name, this.registerForm.value.name,  this.registerForm.value.correo, this.registerForm.value.password1, this.onRegisterSuccess.bind(this), this.onError.bind(this),);
+  }
+
+  async onRegisterSuccess() {
+    await this.loadingController.dismiss();
+    this.alertService.presentToast('Tu cuenta ha sido registrada, inicia sesion para empezar a chatear!', 'success', 3000);
+    this.change();
+  }
+
+
 }
 
