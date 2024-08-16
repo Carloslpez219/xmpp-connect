@@ -59,9 +59,14 @@ ion-item ion-note.md {
   margin: 16px 10px 16px 16px;
 }
 
-.dot-unread {
-  background: var(--ion-color-primary);
+.dot-disconnect {
+  background: var(--ion-color-danger);
 }
+
+.dot-conected {
+  background: var(--ion-color-success);
+}
+
 
 ion-footer ion-title {
   font-size: 11px;

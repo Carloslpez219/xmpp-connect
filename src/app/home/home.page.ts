@@ -1,9 +1,10 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { RefresherCustomEvent } from '@ionic/angular';
+import { LoadingController, RefresherCustomEvent } from '@ionic/angular';
 import { MessageComponent } from '../message/message.component';
 
 import { DataService, Message } from '../services/data.service';
 import { XmppService } from '../services/xmpp.service';
+import { Storage } from '@ionic/storage-angular';
 
 declare const Strophe: any;
 
@@ -16,34 +17,43 @@ export class HomePage implements OnInit{
   private data = inject(DataService);
   contacts: any[] = [];
 
-  constructor(private xmppService: XmppService) { }
+  constructor(private xmppService: XmppService, private storage: Storage, private loadingController: LoadingController) { this.storage.create(); }
 
-  ngOnInit() {
-    this.xmppService.getRoster((roster: any[]) => {
-      this.contacts = roster;
-      console.log('Lista de contactos:', this.contacts);
-    }, this.onError.bind(this));
+  async ngOnInit() {
+    this.presentLoading();
+    const datosUsuario = await this.storage.get('datos');
+    console.log(datosUsuario)
+    this.xmppService.connect(datosUsuario.email, datosUsuario.password, this.onConnect.bind(this));
   }
 
-  // onConnect(status: number) {
-  //   console.log('Estado de conexión recibido en el componente:', status);
-  //   if (status === Strophe.Status.CONNECTING) {
-  //     console.log('Conectando...');
-  //   } else if (status === Strophe.Status.CONNFAIL) {
-  //     console.log('Falló la conexión');
-  //   } else if (status === Strophe.Status.DISCONNECTING) {
-  //     console.log('Desconectando...');
-  //   } else if (status === Strophe.Status.DISCONNECTED) {
-  //     console.log('Desconectado');
-  //   } else if (status === Strophe.Status.CONNECTED) {
-  //     console.log('Conectado');
-  //     // Realizar el descubrimiento de servicios
-  //     this.xmppService.discoverServices(this.onServicesDiscovered.bind(this), this.onError.bind(this));
-      
-  //     // Enviar un mensaje de prueba después de conectarse
-  //     this.sendMessageToMor21116();
-  //   }
-  // }
+  async presentLoading() {
+    const loading = await this.loadingController.create({
+      message: 'Cargando...'
+    });
+    await loading.present();
+  }
+
+async onConnect(status: number) {
+    console.log('Estado de conexión recibido en el componente:', status);
+    if (status === Strophe.Status.CONNECTING) {
+      console.log('Conectando...');
+    } else if (status === Strophe.Status.CONNFAIL) {
+      console.log('Falló la conexión');
+      this.storage.clear();
+      await this.loadingController.dismiss();
+    } else if (status === Strophe.Status.DISCONNECTING) {
+      console.log('Desconectando...');
+    } else if (status === Strophe.Status.DISCONNECTED) {
+      console.log('Desconectado');
+    } else if (status === Strophe.Status.CONNECTED) {
+      console.log('Conectado');
+      this.xmppService.getRoster((roster: any[]) => {
+        this.contacts = roster;
+        console.log('Lista de contactos:', this.contacts);
+      }, this.onError.bind(this));
+      await this.loadingController.dismiss();
+    }
+  }
 
   onServicesDiscovered(stanza: any) {
     console.log('Servicios descubiertos:', stanza);
@@ -53,10 +63,10 @@ export class HomePage implements OnInit{
     console.error('Error:', error);
   }
 
-  sendMessageToMor21116() {
-    const recipient = 'prueba_carrillo@alumchat.lol';
-    const message = 'CR7';
-    this.xmppService.sendMessage(recipient, message);
+  refresh(ev: any) {
+    setTimeout(() => {
+      (ev as RefresherCustomEvent).detail.complete();
+    }, 3000);
   }
 
   // Métodos adicionales para probar otras funcionalidades
@@ -80,13 +90,6 @@ export class HomePage implements OnInit{
   }
 
 
-
-
-  refresh(ev: any) {
-    setTimeout(() => {
-      (ev as RefresherCustomEvent).detail.complete();
-    }, 3000);
-  }
 
   getMessages(): Message[] {
     return this.data.getMessages();

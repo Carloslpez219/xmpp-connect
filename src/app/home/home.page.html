@@ -20,6 +20,6 @@
   </ion-header>
   
   <ion-list>
-    <app-message *ngFor="let contact of contacts()" [message]="message"></app-message>
+    <app-message *ngFor="let contact of contacts" [message]="contact"></app-message>
   </ion-list>
 </ion-content>

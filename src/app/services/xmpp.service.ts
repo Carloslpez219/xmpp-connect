@@ -75,67 +75,50 @@ export class XmppService {
       for (let i = 0; i < items.length; i++) {
         const jid = items[i].getAttribute('jid');
         const name = items[i].getAttribute('name') || jid;
-        this.roster.push({ jid, name });
+        this.roster.push({ jid, name, status: 'offline' });  // Inicialmente todos offline
       }
       console.log('Roster recibido:', this.roster);
       onSuccess(this.roster);
     }, onError);
   }
 
-  getArchivedMessages(jid: string, onSuccess: (messages: any[]) => void, onError: (error: any) => void) {
-    const iq = $iq({ type: 'set', to: jid })
-      .c('query', { xmlns: 'urn:xmpp:mam:2' }) // XEP-0313
-      .c('x', { xmlns: 'jabber:x:data', type: 'submit' })
-      .c('field', { var: 'FORM_TYPE', type: 'hidden' })
-      .c('value').t('urn:xmpp:mam:2').up().up()
-      .c('field', { var: 'with' }) // Filtrar por contacto específico
-      .c('value').t(jid);
+  listenForPresence() {
+    this.connection.addHandler((presence: any) => {
+      const from = presence.getAttribute('from');
+      const type = presence.getAttribute('type');
+      const show = presence.getElementsByTagName('show')[0];
+      let status = 'online';  // Estado predeterminado
 
-    this.connection.sendIQ(iq, (response: any) => {
-      const messages = [];
-      const results = response.getElementsByTagName('result');
-      for (let i = 0; i < results.length; i++) {
-        const forwarded = results[i].getElementsByTagName('forwarded')[0];
-        const message = forwarded.getElementsByTagName('message')[0];
-        if (message) {
-          const from = message.getAttribute('from');
-          const body = message.getElementsByTagName('body')[0];
-          if (body) {
-            messages.push({
-              from: from,
-              body: Strophe.getText(body)
-            });
-          }
+      if (type === 'unavailable') {
+        status = 'offline';
+      } else if (show) {
+        const showText = Strophe.getText(show);
+        if (showText === 'away') {
+          status = 'away';
+        } else if (showText === 'chat') {
+          status = 'available';
+        } else if (showText === 'dnd') {
+          status = 'dnd';  // No molestar
+        } else if (showText === 'xa') {
+          status = 'xa';  // Ausencia extendida
         }
       }
-      console.log('Mensajes archivados:', messages);
-      onSuccess(messages);
-    }, onError);
+
+      // Actualizar el estado del contacto en el roster
+      this.roster.forEach(contact => {
+        if (contact.jid === Strophe.getBareJidFromJid(from)) {
+          contact.status = status;
+          console.log(`Estado de ${contact.jid} actualizado a: ${status}`);
+        }
+      });
+
+      return true;  // Continuar escuchando presencias
+    }, null, 'presence');
   }
 
 
 
 
-
-
-
-
-
-
-
-
-  listenForMessages(onMessage: (from: string, message: string) => void) {
-    this.connection.addHandler((msg: any) => {
-      const from = msg.getAttribute('from');
-      const body = msg.getElementsByTagName('body')[0];
-      if (body) {
-        const message = Strophe.getText(body);
-        console.log(`Mensaje recibido de ${from}: ${message}`);
-        onMessage(from, message);
-      }
-      return true;
-    }, null, 'message', 'chat');
-  }
 
 
 

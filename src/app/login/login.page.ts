@@ -95,7 +95,7 @@ export class LoginPage implements OnInit {
       console.log('Desconectado');
     } else if (status === Strophe.Status.CONNECTED) {
       console.log('Conectado');
-      await this.datosLocalStorage( this.loginForm.value.nombre );
+      await this.datosLocalStorage( {'email': this.loginForm.value.nombre, 'password': this.loginForm.value.password} );
       await this.loadingController.dismiss();
       this.navCtrl.navigateRoot('/');
     }
