@@ -1,8 +1,8 @@
 <ion-item *ngIf="message" [routerLink]="'/message/' + message.jid" [detail]="false">
-  <div slot="start" [class]="!message.read ? 'dot dot-disconnect' : 'dot dot-conected'"></div>
+  <div slot="start" [class]="message.status === 'online' ? 'dot dot-conected' : 'dot dot-disconnect'"></div>
   <ion-label class="ion-text-wrap">
     <h2>
-      {{ message.name }}
+      {{ message.jid }}
       <span class="date">
         <ion-note>{{ message.date }}</ion-note>
         <ion-icon aria-hidden="true" name="chevron-forward" size="small" ></ion-icon>
@@ -10,7 +10,7 @@
     </h2>
     <h3>{{ message.subject }}</h3>
     <p>
-      {{ message.jid }}
+      {{ message.status }}
     </p>
   </ion-label>
   </ion-item>

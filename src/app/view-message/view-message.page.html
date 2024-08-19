@@ -1,29 +1,38 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button [text]="getBackButtonText()" defaultHref="/"></ion-back-button>
+      <ion-back-button text="Inbox" defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ id }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="triggerFileInput()">
+        <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">
+        <ion-icon slot="start" name="attach" style="zoom: 1.3;"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" *ngIf="message">
-  <ion-item>
-    <ion-icon aria-hidden="true" name="person-circle" color="primary"></ion-icon>
-    <ion-label class="ion-text-wrap">
-      <h2>
-        {{ message.fromName }}
-        <span class="date">
-          <ion-note>{{ message.date }}</ion-note>
-        </span>
-      </h2>
-      <h3>To: <ion-note>Me</ion-note></h3>
-    </ion-label>
-  </ion-item>
-  
-  <div class="ion-padding">
-    <h1>{{ message.subject }}</h1>
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-    </p>
+<ion-content [fullscreen]="true">
+  <div #chatContainer class="contenedor-mensajes">
+    <div *ngFor="let mensaje of messages">
+      <div [ngClass]="{'mensaje-enviado': mensaje.type === 'sent', 'mensaje-recibido': mensaje.type === 'received'}">
+        {{ mensaje.message }}
+        <div class="tiempo">{{ mensaje.registrado }}</div>
+      </div>
+    </div>
   </div>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-item style="border-radius: 15px;">
+      <ion-textarea placeholder="Escribe un mensaje..." autoGrow="true" [(ngModel)]="message"></ion-textarea>
+    </ion-item>
+    <ion-buttons slot="end">
+      <ion-button (click)="sendMessage()">
+        <ion-icon slot="start" name="send"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

@@ -18,18 +18,20 @@ export class XmppService {
     };
   }
 
-  //LOGIN
-
+  // LOGIN
   connect(jid: string, password: string, onConnect: (status: number) => void) {
     console.log('Iniciando conexión...');
     this.connection.connect(jid, password, (status: number) => {
       console.log('Estado de conexión:', status);
+      if (status === Strophe.Status.CONNECTED) {
+        this.fetchRoster(); // Llamar a fetchRoster al conectarse
+        this.listenForPresence(); // Escuchar presencia después de la conexión
+      }
       onConnect(status);
     });
   }
-  
-  //REGISTRO
 
+  // REGISTRO
   signup(username: string, fullName: string, email: string, password: string, onSuccess: () => void, onError: (error: any) => void) {
     console.log(this.connection);
 
@@ -64,69 +66,60 @@ export class XmppService {
     });
   }
 
-  //CONTACTOS
+  // CONTACTOS Y PRESENCIA
 
-  getRoster(onSuccess: (roster: any[]) => void, onError: (error: any) => void) {
-    const iq = $iq({ type: 'get' }).c('query', { xmlns: 'jabber:iq:roster' });
+  // Reemplaza getRoster y listenForPresence con fetchRoster y handlePresence
+  fetchRoster() {
+    const rosterIQ = $iq({ type: "get" }).c("query", { xmlns: "jabber:iq:roster" });
 
-    this.connection.sendIQ(iq, (response: any) => {
-      const items = response.getElementsByTagName('item');
-      this.roster = [];
+    this.connection.sendIQ(rosterIQ, (iq: any) => {
+      console.log("Roster recibido:", iq);
+      const contacts: any = {};
+      const items = iq.getElementsByTagName("item");
       for (let i = 0; i < items.length; i++) {
-        const jid = items[i].getAttribute('jid');
-        const name = items[i].getAttribute('name') || jid;
-        this.roster.push({ jid, name, status: 'offline' });  // Inicialmente todos offline
+        const jid = items[i].getAttribute("jid");
+        contacts[jid] = jid in this.roster ? this.roster[jid] : { jid, status: "offline" };
+        this.sendPresenceProbe(jid); // Enviar probe de presencia a cada contacto
       }
-      console.log('Roster recibido:', this.roster);
-      onSuccess(this.roster);
-    }, onError);
+      this.roster = contacts;
+      this.onRosterReceived({ ...this.roster }); // Actualizar el estado del roster
+    });
+  }
+
+  handlePresence(presence: any) {
+    console.log("Stanza de presencia recibida:", presence);
+    const fullJid = presence.getAttribute("from");
+    const from = Strophe.getBareJidFromJid(fullJid); // Normalizar a bare JID
+    const type = presence.getAttribute("type");
+    let status = "";
+
+    if (type === "unavailable") {
+      status = "offline";
+    } else {
+      status = presence.getElementsByTagName("show")[0]?.textContent || "online";
+    }
+
+    this.roster[from] = { jid: from, status }; // Actualizar el estado del contacto
+    this.onRosterReceived({ ...this.roster }); // Actualizar el estado del roster
+
+    return true; // Continuar escuchando presencias
+  }
+
+  sendPresenceProbe(jid: string) {
+    const probe = $pres({ type: "probe", to: jid });
+    this.connection.send(probe.tree());
   }
 
   listenForPresence() {
-    this.connection.addHandler((presence: any) => {
-      const from = presence.getAttribute('from');
-      const type = presence.getAttribute('type');
-      const show = presence.getElementsByTagName('show')[0];
-      let status = 'online';  // Estado predeterminado
-
-      if (type === 'unavailable') {
-        status = 'offline';
-      } else if (show) {
-        const showText = Strophe.getText(show);
-        if (showText === 'away') {
-          status = 'away';
-        } else if (showText === 'chat') {
-          status = 'available';
-        } else if (showText === 'dnd') {
-          status = 'dnd';  // No molestar
-        } else if (showText === 'xa') {
-          status = 'xa';  // Ausencia extendida
-        }
-      }
-
-      // Actualizar el estado del contacto en el roster
-      this.roster.forEach(contact => {
-        if (contact.jid === Strophe.getBareJidFromJid(from)) {
-          contact.status = status;
-          console.log(`Estado de ${contact.jid} actualizado a: ${status}`);
-        }
-      });
-
-      return true;  // Continuar escuchando presencias
-    }, null, 'presence');
+    this.connection.addHandler(this.handlePresence.bind(this), null, 'presence');
   }
 
+  onRosterReceived(roster: any) {
+    console.log("Roster actualizado con estados de presencia:", roster);
+    // Aquí puedes agregar la lógica para actualizar la UI o notificar a otros componentes
+  }
 
-
-
-
-
-
-
-
-
-
-
+  // ENVÍO DE MENSAJES
   sendMessage(to: string, message: string) {
     const msg = $msg({ to, type: 'chat' })
       .c('body').t(message);
@@ -140,17 +133,7 @@ export class XmppService {
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
+  // DESCONEXIÓN
   disconnect() {
     if (this.connection) {
       console.log('Desconectando...');
@@ -158,6 +141,7 @@ export class XmppService {
     }
   }
 
+  // ELIMINAR CUENTA
   deleteAccount(jid: string, onSuccess: () => void, onError: (error: any) => void) {
     const iq = $iq({ type: 'set', to: jid })
       .c('query', { xmlns: 'jabber:iq:register' })
@@ -166,7 +150,7 @@ export class XmppService {
     this.connection.sendIQ(iq, onSuccess, onError);
   }
 
-
+  // AÑADIR CONTACTOS
   addContact(jid: string, name: string, groups: string[], onSuccess: () => void, onError: (error: any) => void) {
     const iq = $iq({ type: 'set' })
       .c('query', { xmlns: 'jabber:iq:roster' })
@@ -176,11 +160,13 @@ export class XmppService {
     this.connection.sendIQ(iq, onSuccess, onError);
   }
 
+  // ENVIAR PRESENCIA
   sendPresence(presence: string) {
     const pres = $pres().c('show').t(presence);
     this.connection.send(pres);
   }
 
+  // ENTRAR A UN CHAT DE GRUPO
   joinGroupChat(roomJid: string, nickname: string) {
     const presence = $pres({ to: `${roomJid}/${nickname}` })
       .c('x', { xmlns: 'http://jabber.org/protocol/muc' });
@@ -188,14 +174,17 @@ export class XmppService {
     this.connection.send(presence);
   }
 
+  // SUBIR ARCHIVO
   sendFile(to: string, file: File) {
     // Aquí puedes implementar la lógica para enviar archivos utilizando HTTP Upload o cualquier otra extensión XMPP adecuada
   }
 
+  // RECIBIR NOTIFICACIONES
   receiveNotifications(handler: (msg: any) => boolean) {
     this.connection.addHandler(handler, null, 'message', 'headline');
   }
 
+  // DESCUBRIR SERVICIOS
   discoverServices(onSuccess: (stanza: any) => void, onError: (error: any) => void) {
     const iq = $iq({ type: 'get', to: this.connection.domain })
       .c('query', { xmlns: 'http://jabber.org/protocol/disco#items' });
