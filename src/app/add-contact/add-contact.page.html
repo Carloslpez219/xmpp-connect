@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Agregar Contacto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <ion-item>
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input [(ngModel)]="newContactEmail" type="email" placeholder="Ingresa el email"></ion-input>
+    </ion-item>
+    <ion-button expand="block" (click)="addContact()">Agregar</ion-button>
+  </ion-card>
+</ion-content>

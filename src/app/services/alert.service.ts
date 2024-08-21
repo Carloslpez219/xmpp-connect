@@ -25,6 +25,33 @@ export class AlertService {
       color
     });
     toast.present();
+  }  
+
+  async presentAlertButtons(header: string, message: string, acceptHandler: () => void, cancelHandler: () => void) {
+    const alert = await this.alertCtrl.create({
+      header,
+      message,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            console.log('Alert canceled');
+            cancelHandler(); 
+          },
+        },
+        {
+          text: 'Aceptar',
+          role: 'confirm',
+          handler: () => {
+            console.log('Alert confirmed');
+            acceptHandler(); 
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { AlertService } from './alert.service';
 declare const Strophe: any;
 declare const $iq: any;
 declare const $msg: any;
@@ -11,7 +12,7 @@ export class XmppService {
   private connection: any;
   private roster: any[] = [];
 
-  constructor() {
+  constructor(private alertService: AlertService) {
     this.connection = new Strophe.Connection('ws://alumchat.lol:7070/ws/');
     (window as any).process = {
       env: { NODE_TLS_REJECT_UNAUTHORIZED: '0' }
@@ -68,28 +69,32 @@ export class XmppService {
 
   // CONTACTOS Y PRESENCIA
 
-  // Reemplaza getRoster y listenForPresence con fetchRoster y handlePresence
   fetchRoster() {
     const rosterIQ = $iq({ type: "get" }).c("query", { xmlns: "jabber:iq:roster" });
 
     this.connection.sendIQ(rosterIQ, (iq: any) => {
-      console.log("Roster recibido:", iq);
-      const contacts: any = {};
-      const items = iq.getElementsByTagName("item");
-      for (let i = 0; i < items.length; i++) {
-        const jid = items[i].getAttribute("jid");
-        contacts[jid] = jid in this.roster ? this.roster[jid] : { jid, status: "offline" };
-        this.sendPresenceProbe(jid); // Enviar probe de presencia a cada contacto
-      }
-      this.roster = contacts;
-      this.onRosterReceived({ ...this.roster }); // Actualizar el estado del roster
+        console.log("Roster recibido:", iq);
+        const contacts: any = {};
+        const items = iq.getElementsByTagName("item");
+        for (let i = 0; i < items.length; i++) {
+            const jid = items[i].getAttribute("jid");
+            const subscription = items[i].getAttribute("subscription");
+
+            // Solo incluir contactos con suscripción "both" o "from"
+            if (subscription === "both" || subscription === "from") {
+                contacts[jid] = jid in this.roster ? this.roster[jid] : { jid, status: "offline" };
+                this.sendPresenceProbe(jid);
+            }
+        }
+        this.roster = contacts;
+        this.onRosterReceived({ ...this.roster });
     });
-  }
+}
 
   handlePresence(presence: any) {
     console.log("Stanza de presencia recibida:", presence);
     const fullJid = presence.getAttribute("from");
-    const from = Strophe.getBareJidFromJid(fullJid); // Normalizar a bare JID
+    const from = Strophe.getBareJidFromJid(fullJid);
     const type = presence.getAttribute("type");
     let status = "";
 
@@ -99,10 +104,10 @@ export class XmppService {
       status = presence.getElementsByTagName("show")[0]?.textContent || "online";
     }
 
-    this.roster[from] = { jid: from, status }; // Actualizar el estado del contacto
-    this.onRosterReceived({ ...this.roster }); // Actualizar el estado del roster
+    this.roster[from] = { jid: from, status };
+    this.onRosterReceived({ ...this.roster });
 
-    return true; // Continuar escuchando presencias
+    return true;
   }
 
   sendPresenceProbe(jid: string) {
@@ -142,23 +147,122 @@ export class XmppService {
   }
 
   // ELIMINAR CUENTA
-  deleteAccount(jid: string, onSuccess: () => void, onError: (error: any) => void) {
-    const iq = $iq({ type: 'set', to: jid })
-      .c('query', { xmlns: 'jabber:iq:register' })
-      .c('remove');
-
-    this.connection.sendIQ(iq, onSuccess, onError);
+  deleteAccount(onSuccess: () => void, onError: (error: any) => void) {
+    try {
+      const iq = $iq({
+        type: 'set',
+        id: 'delete1',
+        to: this.connection.domain
+      }).c('query', { xmlns: 'jabber:iq:register' })
+        .c('remove');
+        
+      this.connection.sendIQ(iq, (result: any) => {
+        console.log('Cuenta eliminada exitosamente');
+        onSuccess();
+      }, (error: any) => {
+        console.error('Error al eliminar la cuenta:', error);
+        onError(error);
+      });
+    } catch (error) {
+      console.error('Error inesperado al intentar eliminar la cuenta:', error);
+      onError(error);
+    }
   }
+  
 
   // AÑADIR CONTACTOS
-  addContact(jid: string, name: string, groups: string[], onSuccess: () => void, onError: (error: any) => void) {
-    const iq = $iq({ type: 'set' })
-      .c('query', { xmlns: 'jabber:iq:roster' })
-      .c('item', { jid, name })
-      .c('group').t(groups.join(','));
+  addContact(jid: string, onSuccess: () => void, onError: (error: any) => void) {
+    const presence = $pres({
+        to: jid,
+        type: 'subscribe'
+    });
 
-    this.connection.sendIQ(iq, onSuccess, onError);
-  }
+    this.connection.send(presence, () => {
+        console.log('Solicitud de suscripción enviada a:', jid);
+        this.alertService.presentToast(`Solicitud de suscripción enviada a: ${jid} .`, 'success', 5000);
+        onSuccess();
+    }, (error: any) => {
+        console.error('Error al enviar solicitud de suscripción:', error);
+        onError(error);
+    });
+}
+
+private addToRoster(jid: string) {
+  const iq = $iq({ type: 'set' })
+    .c('query', { xmlns: 'jabber:iq:roster' })
+    .c('item', { jid, name: jid });
+
+  this.connection.sendIQ(iq, () => {
+      console.log(`Contacto ${jid} agregado al roster.`);
+  }, (error: any) => {
+      console.error('Error al agregar el contacto al roster:', error);
+  });
+}
+
+listenForSubscriptionRequests() {
+  this.connection.addHandler((presence: any) => {
+      console.log('Presence stanza received:', presence); // Log para depuración
+      const from = presence.getAttribute('from');
+      const type = presence.getAttribute('type');
+
+      console.log(`From: ${from}, Type: ${type}`); // Log adicional para verificar valores
+
+      if (type === 'subscribe') {
+          console.log('Solicitud de suscripción recibida de:', from);
+          
+          this.alertService.presentAlertButtons(
+            'Solicitud de amistad',
+            'Solicitud de suscripción recibida de: ' + from,
+            () => this.acceptSubscription(from),
+            () => this.rejectSubscription(from)
+          );          
+
+      } else if (type === 'subscribed') {
+          this.alertService.presentToast(`${from} ha aceptado tu solicitud de suscripción.`, 'success', 5000);
+          console.log(`${from} ha aceptado tu solicitud de suscripción.`);
+          this.addToRoster(from);
+      } else if (type === 'unsubscribed') {
+          this.alertService.presentToast(`${from} ha rechazado tu solicitud de suscripción.`, 'danger', 5000);
+          console.log(`${from} ha rechazado tu solicitud de suscripción.`);
+      } else {
+          console.log(`Tipo de presencia no manejado: ${type}`); // Manejo de otros tipos de presencia
+      }
+
+      return true; 
+  }, null, 'presence');
+}
+
+
+acceptSubscription(jid: string) {
+  const presence = $pres({
+    to: jid,
+    type: 'subscribed'
+  });
+  this.connection.send(presence);
+  console.log(`Solicitud de suscripción aceptada de: ${jid}`);
+  
+  this.sendSubscriptionRequest(jid);
+}
+
+rejectSubscription(jid: string) {
+  const presence = $pres({
+      to: jid,
+      type: 'unsubscribed'
+  });
+  this.connection.send(presence);
+  console.log(`Solicitud de suscripción rechazada de: ${jid}`);
+}
+
+
+sendSubscriptionRequest(jid: string) {
+  const presence = $pres({
+    to: jid,
+    type: 'subscribe'
+  });
+  this.connection.send(presence);
+  console.log(`Solicitud de suscripción enviada a: ${jid}`);
+}
+
 
   // ENVIAR PRESENCIA
   sendPresence(presence: string) {
