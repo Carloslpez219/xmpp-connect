@@ -80,6 +80,7 @@ export class LoginPage implements OnInit {
 
   async onConnect(status: number) {
     console.log('Estado de conexión recibido en el componente:', status);
+    
     if (status === Strophe.Status.CONNECTING) {
       console.log('Conectando...');
     } else if (status === Strophe.Status.CONNFAIL) {
@@ -87,19 +88,26 @@ export class LoginPage implements OnInit {
       this.data = null;
       this.storage.clear();
       await this.loadingController.dismiss();
-      const message = 'Usuario y/o Contraseña son incorrectos';
+      const message = 'No se pudo conectar con el servidor';
       this.alertService.presentToast(message, 'danger', 3000);
     } else if (status === Strophe.Status.DISCONNECTING) {
       console.log('Desconectando...');
     } else if (status === Strophe.Status.DISCONNECTED) {
       console.log('Desconectado');
+    } else if (status === Strophe.Status.AUTHFAIL) {
+      console.log('Falló la autenticación');
+      this.data = null;
+      this.storage.clear();
+      await this.loadingController.dismiss();
+      const message = 'Usuario y/o Contraseña son incorrectos';
+      this.alertService.presentToast(message, 'danger', 3000);
     } else if (status === Strophe.Status.CONNECTED) {
       console.log('Conectado');
-      await this.datosLocalStorage( {'email': this.loginForm.value.nombre, 'password': this.loginForm.value.password} );
+      await this.datosLocalStorage({'email': this.loginForm.value.nombre, 'password': this.loginForm.value.password});
       await this.loadingController.dismiss();
       this.navCtrl.navigateRoot('/');
     }
-  }
+  }  
 
   async onError(error: any) {
     this.data = null;

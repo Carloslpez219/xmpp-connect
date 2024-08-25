@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { IonicModule, LoadingController, Platform } from '@ionic/angular';
 import { DataService, Message } from '../services/data.service';
 import { Storage } from '@ionic/storage-angular';
+import { XmppService } from '../services/xmpp.service';
 
 @Component({
   selector: 'app-view-message',
@@ -32,7 +33,8 @@ export class ViewMessagePage implements OnInit {
   constructor(
     private loadingController: LoadingController,
     private platform: Platform,
-    private storage: Storage
+    private storage: Storage,
+    private xmppService: XmppService
   ) {
     this.datosUsuario = this.storage.get('datos');
   }
@@ -58,8 +60,8 @@ export class ViewMessagePage implements OnInit {
 
       this.messages.push(objMsj)
       
-      console.log('Mensaje enviado:', this.messages);
-      this.message = ''; // Limpiar el campo de texto después de enviar el mensaje
+      this.xmppService.sendMessage(this.id, this.message);
+      this.message = ''; 
       this.scrollToBottom();
     }
   }

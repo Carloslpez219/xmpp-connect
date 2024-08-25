@@ -4,9 +4,9 @@
       Inbox
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="deleteAccount()">
+      <!-- <ion-button (click)="deleteAccount()">
         <ion-icon slot="end" name="trash" color="danger"></ion-icon>
-      </ion-button>
+      </ion-button> -->
       <ion-button (click)="logOut()">
         <ion-icon slot="end" name="power"></ion-icon>
       </ion-button>
@@ -15,9 +15,6 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
   
   <ion-header collapse="condense">
     <ion-toolbar>
@@ -28,7 +25,7 @@
   </ion-header>
   
   <ion-list>
-    <app-message *ngFor="let contact of contacts" [message]="contact"></app-message>
+    <app-message *ngFor="let contact of rosterArray" [message]="contact"></app-message>
   </ion-list>
 
 
