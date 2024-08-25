@@ -1,0 +1,39 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear Grupo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <ion-item>
+      <ion-label position="stacked">Nombre del Grupo</ion-label>
+      <ion-input [(ngModel)]="groupName" type="text" placeholder="Ingresa el nombre del grupo"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">ID del Grupo (opcional)</ion-label>
+      <ion-input [(ngModel)]="groupJid" type="text" placeholder="Ingresa el JID del grupo (opcional)"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Email del Contacto</ion-label>
+      <ion-input [(ngModel)]="newContactEmail" type="email" placeholder="Ingresa el email"></ion-input>
+      <ion-button fill="outline" (click)="addContact()">Agregar</ion-button>
+    </ion-item>
+  </ion-card>
+
+  <ion-list>
+    <ion-item *ngFor="let email of contacts; let i = index">
+      <ion-label>{{ email }}</ion-label>
+      <ion-button fill="clear" color="danger" (click)="removeContact(i)">
+        <ion-icon name="remove-circle"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-button expand="block" color="primary" (click)="saveGroup()">Guardar Grupo</ion-button>
+</ion-content>

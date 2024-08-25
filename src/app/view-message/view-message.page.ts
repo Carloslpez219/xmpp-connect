@@ -25,8 +25,21 @@ export class ViewMessagePage implements OnInit {
     this.activatedRoute.paramMap.subscribe(params => {
       this.id = params.get('jid');
       console.log('JID obtenido de la ruta:', this.id);
+      if (this.id) {
+        this.loadMessages(this.id);
+      }
+    });
+  
+    // Suscribirse para recibir mensajes en tiempo real
+    this.xmppService.messages$.subscribe(messageHistory => {
+      if (this.id && messageHistory[this.id]) {
+        this.messages = messageHistory[this.id];
+        this.scrollToBottom();
+      }
+      this.scrollToBottom();
     });
   }
+  
 
   selectedFile!: File;
 
@@ -53,18 +66,20 @@ export class ViewMessagePage implements OnInit {
 
   sendMessage() {
     if (this.message.trim()) {
-      const objMsj = {
-        'message': this.message,
-        'type': 'sent'
-      }
-
-      this.messages.push(objMsj)
-      
       this.xmppService.sendMessage(this.id, this.message);
       this.message = ''; 
       this.scrollToBottom();
     }
+    this.scrollToBottom();
   }
+  
+
+  private loadMessages(jid: string) {
+    this.messages = this.xmppService.fetchMessageHistory(jid);
+    console.log(this.messages)
+    this.scrollToBottom();
+  }
+  
 
   triggerFileInput() {
     this.fileInput.nativeElement.click();
