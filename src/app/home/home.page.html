@@ -3,6 +3,11 @@
     <ion-title>
       Inbox
     </ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="openPresenceModal()">
+        <ion-icon slot="start" name="person-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-buttons slot="end">
       <!-- <ion-button (click)="deleteAccount()">
         <ion-icon slot="end" name="trash" color="danger"></ion-icon>

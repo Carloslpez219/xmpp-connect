@@ -25,6 +25,14 @@ const routes: Routes = [
     path: 'add-contacts',
     loadChildren: () => import('./add-contacts/add-contacts.module').then( m => m.AddContactsPageModule)
   },
+  {
+    path: 'precense-modal',
+    loadChildren: () => import('./precense-modal/precense-modal.module').then( m => m.PrecenseModalPageModule)
+  },
+  {
+    path: 'contact-details',
+    loadChildren: () => import('./contact-details/contact-details.module').then( m => m.ContactDetailsPageModule)
+  },
 
   // {
   //   path: 'home',

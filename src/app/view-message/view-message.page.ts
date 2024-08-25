@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IonicModule, LoadingController, Platform } from '@ionic/angular';
+import { IonicModule, LoadingController, ModalController, Platform } from '@ionic/angular';
 import { DataService, Message } from '../services/data.service';
 import { Storage } from '@ionic/storage-angular';
 import { XmppService } from '../services/xmpp.service';
+import { ContactDetailsPage } from '../contact-details/contact-details.page';
 
 @Component({
   selector: 'app-view-message',
@@ -47,7 +48,8 @@ export class ViewMessagePage implements OnInit {
     private loadingController: LoadingController,
     private platform: Platform,
     private storage: Storage,
-    private xmppService: XmppService
+    private xmppService: XmppService,
+    private modalController: ModalController
   ) {
     this.datosUsuario = this.storage.get('datos');
   }
@@ -78,6 +80,15 @@ export class ViewMessagePage implements OnInit {
     this.messages = this.xmppService.fetchMessageHistory(jid);
     console.log(this.messages)
     this.scrollToBottom();
+  }
+
+  async openContactDetailsModal() {
+    const jid = this.id;
+    const modal = await this.modalController.create({
+      component: ContactDetailsPage,
+      componentProps: { contactJid: jid }
+    });
+    return await modal.present();
   }
   
 

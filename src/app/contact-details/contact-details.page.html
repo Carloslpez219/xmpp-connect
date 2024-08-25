@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Detalles del Contacto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <ion-item lines="none">
+      <ion-avatar slot="start">
+        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Avatar">
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ contactName }}</h2>
+        <p>{{ contactJid }}</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Estado</ion-label>
+      <ion-text>{{ contactStatus | titlecase }}</ion-text>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Mensaje de Estado</ion-label>
+      <ion-textarea readonly>{{ contactStatusMessage }}</ion-textarea>
+    </ion-item>
+  </ion-card>
+</ion-content>

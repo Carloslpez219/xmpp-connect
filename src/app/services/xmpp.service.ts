@@ -21,13 +21,15 @@ export class XmppService {
 
   private connection: any;
 
-  private roster: { [jid: string]: any } = {}; 
+  roster: { [jid: string]: any } = {}; 
   private rosterSubject = new BehaviorSubject<any>({});
   roster$ = this.rosterSubject.asObservable();
 
   private messagesHistory: { [jid: string]: { message: string, type: string, timestamp: string }[] } = {};
   private messagesSubject = new BehaviorSubject<{ [jid: string]: { message: string, type: string, timestamp: string }[] }>({});
   messages$ = this.messagesSubject.asObservable();
+
+
 
   private subscriptionQueue: string[] = [];
   public jid: string = "";
@@ -92,36 +94,17 @@ export class XmppService {
   handleMessage(message: any) {
     const from = message.getAttribute('from');
     const bodyElements = message.getElementsByTagName('body');
-
+  
     if (bodyElements.length > 0) {
-        const body = bodyElements[0].textContent;
-        console.log(`Mensaje recibido de ${from}: ${body}`);
-
-        const isGroupMessage = from.includes('@conference.');
-        
-        const jid = isGroupMessage ? from.split('/')[0] : Strophe.getBareJidFromJid(from);
-
-        this.addMessageToHistory(jid, body, 'received')
-
-        if (isGroupMessage) {
-            const senderNickname = from.split('/')[1];
-            console.log(`Mensaje en grupo ${jid} de ${senderNickname}: ${body}`);
-            this.addMessageToHistory(jid, `${senderNickname}: ${body}`, 'received');
-        } else {
-            console.log(`Mensaje directo de ${jid}: ${body}`);
-            this.addMessageToHistory(jid, body, 'received');
-        }
+      const body = bodyElements[0].textContent;
+      console.log(`Mensaje recibido de ${from}: ${body}`);
+      this.addMessageToHistory(from, body, 'received');
     }
-
-    // Verificar si es una invitación a un grupo
-    const x = message.getElementsByTagName('x')[0];
-    if (x && x.getAttribute('xmlns') === 'http://jabber.org/protocol/muc#user') {
-        console.log("Invitación a grupo detectada:", message);
-        this.handleGroupInvitation(message);
-    }
-
+  
     return true;
-}
+  }
+  
+  
 
   private addMessageToHistory(jid: string, message: string, type: string) {
     const bareJid = jid.split('/')[0];
@@ -136,9 +119,11 @@ export class XmppService {
   }
   
 
-  fetchMessageHistory(jid: string) {
-    return this.messagesHistory[jid] || [];
-  }
+fetchMessageHistory(jid: string) {
+  return this.messagesHistory[jid] || [];
+}
+
+
 
   signup(username: string, fullName: string, email: string, password: string, onSuccess: () => void, onError: (error: any) => void) {
     const anonymousJid = "lop21666@alumchat.lol"; 
@@ -207,9 +192,11 @@ export class XmppService {
     });
 }
 
+  
+
   handlePresence(presence: any) {
     console.log("Presence stanza received:", presence);
-
+  
     const fullJid = presence.getAttribute("from");
     const from = Strophe.getBareJidFromJid(fullJid);
     const type = presence.getAttribute("type");
@@ -244,6 +231,8 @@ export class XmppService {
     return true;
 }
 
+  
+
   handleSubscriptionRequest(from: string) {
     if (!(from in this.roster)) {
       console.log(`Subscription request from ${from} received`);
@@ -263,149 +252,103 @@ export class XmppService {
     }
 }
 
-handleGroupInvitation(invitation: any) {
-  const from = invitation.getAttribute("from");  // El JID del grupo que envía la invitación
-  const reason = invitation.getElementsByTagName("reason")[0]?.textContent || "Sin motivo especificado";
-  const roomJid = from.split('/')[0]; // Obtener el JID del grupo sin el recurso
 
-  console.log(`Invitación recibida de ${from} para unirse al grupo ${roomJid}`);
 
-  // Presentar la alerta para que el usuario decida aceptar o rechazar la invitación
-  this.alertService.presentAlertButtons(
-      'Invitación a unirse a un grupo',
-      `Has sido invitado a unirte al grupo: ${roomJid}\nMotivo: ${reason}`,
-      () => this.acceptGroupInvitation(roomJid),
-      () => this.rejectGroupInvitation(roomJid)
-  );
-}
 
-acceptGroupInvitation(roomJid: string) {
-  console.log(`Aceptando la invitación para unirse al grupo ${roomJid}`);
-  
-  // Unirse al grupo utilizando MUC (Multi-User Chat)
-  const nickname = 'your_nickname';  // Sustituye con el nickname deseado
-  const joinPresence = $pres({ to: `${roomJid}/${nickname}` })
-      .c("x", { xmlns: "http://jabber.org/protocol/muc" });
-
-  this.connection.send(joinPresence.tree());
-  console.log(`Te has unido al grupo ${roomJid}`);
-}
-
-rejectGroupInvitation(roomJid: string) {
-  console.log(`Rechazando la invitación para unirse al grupo ${roomJid}`);
-  // Aquí puedes manejar el rechazo de la invitación como prefieras, tal vez enviando una notificación al grupo o simplemente ignorando la invitación
-}
-
-createGroupChat(roomJid: string, nickname: string) {
-  const presence = $pres({
-      from: this.jid,
-      to: `${roomJid}/${nickname}`
-  }).c('x', { xmlns: 'http://jabber.org/protocol/muc' });
-
-  this.connection.send(presence.tree());
-  console.log(`Se ha creado y unido al chat grupal: ${roomJid}`);
-}
-
-inviteToGroup(roomJid: string, inviteeJid: string) {
-  const message = $msg({
-      to: roomJid
-  }).c('x', { xmlns: 'http://jabber.org/protocol/muc#user' })
-    .c('invite', { to: inviteeJid });
-  
-  this.connection.send(message.tree());
-  console.log(`Invitación enviada a ${inviteeJid} para unirse a ${roomJid}`);
-}
-
-fetchSubscriptionRequests(onFetchSubscriptions: (subscriptions: string[]) => void) {
-  onFetchSubscriptions([...this.subscriptionQueue]);
-}
-
-sendPresenceProbe(jid: string) {
-  const probe = $pres({ type: "probe", to: jid });
-  this.connection.send(probe.tree());
-}
-
-cleanClientValues() {
-  this.roster = {};
-  this.subscriptionQueue = [];
-  this.onRosterReceivedCallback = () => {};
-  this.onSubscriptionReceivedCallback = () => {};
-  this.jid = "";
-  this.status = "online";
-  this.statusMessage = "Available";
-}
-
-disconnect() {
-  this.sendPresence("offline", "Disconnected");
-  this.connection.disconnect();
-  this.cleanClientValues();
-  console.log("Disconnected from XMPP server");
-}
-
-acceptSubscription(from: string) {
-  console.log(`Accepting subscription request from ${from}`);
-  const acceptPresence = $pres({ to: from, type: "subscribed" });
-  this.connection.send(acceptPresence.tree());
-
-  // Enviar una solicitud de suscripción si aún no existe
-  if (!(from in this.roster) || this.roster[from].status !== "both") {
-      this.sendSubscriptionRequest(from);
+  fetchSubscriptionRequests(onFetchSubscriptions: (subscriptions: string[]) => void) {
+    onFetchSubscriptions([...this.subscriptionQueue]);
   }
 
-  // Actualizar el roster local
-  this.roster[from] = { jid: from, status: "both", statusMessage: "Subscribed" };
-  this.rosterSubject.next({ ...this.roster }); // Emitir el roster actualizado
+  sendPresenceProbe(jid: string) {
+    const probe = $pres({ type: "probe", to: jid });
+    this.connection.send(probe.tree());
+  }
 
-  // Remover de la cola de solicitudes de suscripción pendientes
-  this.subscriptionQueue = this.subscriptionQueue.filter(jid => jid !== from);
-  this.onSubscriptionReceivedCallback([...this.subscriptionQueue]);
+  cleanClientValues() {
+    this.roster = {};
+    this.subscriptionQueue = [];
+    this.onRosterReceivedCallback = () => {};
+    this.onSubscriptionReceivedCallback = () => {};
+    this.jid = "";
+    this.status = "online";
+    this.statusMessage = "Available";
+  }
+
+  disconnect() {
+    this.sendPresence("offline", "Disconnected");
+    this.connection.disconnect();
+    this.cleanClientValues();
+    console.log("Disconnected from XMPP server");
+  }
+
+  
+  acceptSubscription(from: string) {
+    console.log(`Accepting subscription request from ${from}`);
+    const acceptPresence = $pres({ to: from, type: "subscribed" });
+    this.connection.send(acceptPresence.tree());
+
+    // Enviar una solicitud de suscripción si aún no existe
+    if (!(from in this.roster) || this.roster[from].status !== "both") {
+        this.sendSubscriptionRequest(from);
+    }
+
+    // Actualizar el roster local
+    this.roster[from] = { jid: from, status: "both", statusMessage: "Subscribed" };
+    this.rosterSubject.next({ ...this.roster }); // Emitir el roster actualizado
+
+    // Remover de la cola de solicitudes de suscripción pendientes
+    this.subscriptionQueue = this.subscriptionQueue.filter(jid => jid !== from);
+    this.onSubscriptionReceivedCallback([...this.subscriptionQueue]);
 }
 
 rejectSubscription(from: string) {
-  console.log(`Rejecting subscription request from ${from}`);
-  const rejectPresence = $pres({ to: from, type: "unsubscribed" });
-  this.connection.send(rejectPresence.tree());
-  
-  // Remover de la cola de solicitudes de suscripción pendientes
-  this.subscriptionQueue = this.subscriptionQueue.filter(jid => jid !== from);
-  this.onSubscriptionReceivedCallback([...this.subscriptionQueue]);
+    console.log(`Rejecting subscription request from ${from}`);
+    const rejectPresence = $pres({ to: from, type: "unsubscribed" });
+    this.connection.send(rejectPresence.tree());
+    
+    // Remover de la cola de solicitudes de suscripción pendientes
+    this.subscriptionQueue = this.subscriptionQueue.filter(jid => jid !== from);
+    this.onSubscriptionReceivedCallback([...this.subscriptionQueue]);
 }
 
-deleteAccount(onSuccess: () => void) {
-  const deleteIQ = $iq({ type: "set", to: "alumchat.lol" })
-    .c("query", { xmlns: "jabber:iq:register" })
-    .c("remove");
 
-  this.connection.sendIQ(deleteIQ, (iq: any) => {
-    console.log("Account deletion successful", iq);
-    onSuccess();
-  }, (error: any) => {
-    console.error("Account deletion failed", error);
-  });
-}
+  deleteAccount(onSuccess: () => void) {
+    const deleteIQ = $iq({ type: "set", to: "alumchat.lol" })
+      .c("query", { xmlns: "jabber:iq:register" })
+      .c("remove");
 
-addContact(jid: string, onSuccess: () => void, onError: (error: any) => void) {
-  // Enviar IQ para agregar el contacto al roster
-  const addContactIQ = $iq({ type: "set" })
-    .c("query", { xmlns: "jabber:iq:roster" })
-    .c("item", { jid });
+    this.connection.sendIQ(deleteIQ, (iq: any) => {
+      console.log("Account deletion successful", iq);
+      onSuccess();
+    }, (error: any) => {
+      console.error("Account deletion failed", error);
+    });
+  }
 
-  this.connection.sendIQ(addContactIQ, (iq: any) => {
-    console.log(`Contact ${jid} added successfully`, iq);
 
-    // Aquí no se añade al roster local, solo se envía la solicitud de suscripción
-    this.sendSubscriptionRequest(jid);
+  addContact(jid: string, onSuccess: () => void, onError: (error: any) => void) {
+    // Enviar IQ para agregar el contacto al roster
+    const addContactIQ = $iq({ type: "set" })
+      .c("query", { xmlns: "jabber:iq:roster" })
+      .c("item", { jid });
 
-    onSuccess();
-  }, (error: any) => {
-    console.error(`Failed to add contact ${jid}`, error);
-    onError(error);
-  });
+    this.connection.sendIQ(addContactIQ, (iq: any) => {
+      console.log(`Contact ${jid} added successfully`, iq);
+
+      // Aquí no se añade al roster local, solo se envía la solicitud de suscripción
+      this.sendSubscriptionRequest(jid);
+
+      onSuccess();
+    }, (error: any) => {
+      console.error(`Failed to add contact ${jid}`, error);
+      onError(error);
+    });
 }
 
 sendSubscriptionRequest(jid: string) {
-  const presenceSubscribe = $pres({ to: jid, type: "subscribe" });
-  this.connection.send(presenceSubscribe.tree());
-  console.log(`Subscription request sent to ${jid}`);
+    const presenceSubscribe = $pres({ to: jid, type: "subscribe" });
+    this.connection.send(presenceSubscribe.tree());
+    console.log(`Subscription request sent to ${jid}`);
 }
+
 }

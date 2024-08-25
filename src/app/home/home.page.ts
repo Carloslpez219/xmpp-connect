@@ -5,6 +5,7 @@ import { Storage } from '@ionic/storage-angular';
 import { AddContactPage } from '../add-contact/add-contact.page';
 import { Router } from '@angular/router';
 import { AddContactsPage } from '../add-contacts/add-contacts.page';
+import { PrecenseModalPage } from '../precense-modal/precense-modal.page';
 
 declare const Strophe: any;
 
@@ -91,20 +92,27 @@ export class HomePage implements OnInit {
     const { data } = await modal.onDidDismiss();
     if (data) {
       const { groupJid, contacts } = data;
-      contacts.forEach((jid: string) => {
-        this.xmppService.inviteToGroup(groupJid, jid);
-      });
+      // contacts.forEach((jid: string) => {
+      //   this.xmppService.inviteToGroup(groupJid, jid);
+      // });
     }
-}
+  }
 
 
   createNewGroup() {
     const roomJid = `grupo${new Date().getTime()}@conference.alumchat.lol`;  // Generar un JID único para el grupo
     const nickname = 'your_nickname';  // Sustituye con el nickname deseado
 
-    this.xmppService.createGroupChat(roomJid, nickname);
+    // this.xmppService.createGroupChat(roomJid, nickname);
     this.selectedGroupJid = roomJid;
     this.openAddGroupModal();
+  }
+
+  async openPresenceModal() {
+    const modal = await this.modalController.create({
+      component: PrecenseModalPage
+    });
+    return await modal.present();
   }
 
   // async deleteAccount() {

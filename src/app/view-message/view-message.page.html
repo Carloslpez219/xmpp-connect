@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button text="Inbox" defaultHref="/"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ id }}</ion-title>
+    <ion-title (click)="openContactDetailsModal()">{{ id }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="triggerFileInput()">
         <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)">

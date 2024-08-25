@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <ion-item lines="none">
+      <ion-avatar slot="start">
+        <img src="https://ionicframework.com/docs/img/demos/avatar.svg" alt="Avatar">
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ sessionName }}</h2>
+        <p>{{ sessionJid }}</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>Estado</ion-label>
+      <ion-select [(ngModel)]="selectedStatus">
+        <ion-select-option value="online">Online</ion-select-option>
+        <ion-select-option value="away">Away</ion-select-option>
+        <ion-select-option value="offline">Offline</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Mensaje de Estado</ion-label>
+      <ion-input [(ngModel)]="statusMessage" placeholder="Ingresa tu mensaje de estado"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" (click)="updatePresence()">Actualizar Presencia</ion-button>
+  </ion-card>
+</ion-content>
