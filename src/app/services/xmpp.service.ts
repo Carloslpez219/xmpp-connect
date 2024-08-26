@@ -353,7 +353,6 @@ sendFile(to: string, file: File) {
     this.connection.send(message.tree());
     console.log(`Archivo enviado a ${to}: ${fileName}`);
 
-    // Opcional: añadir el archivo al historial de mensajes
     this.addMessageToHistory(to, `Archivo: ${fileName}`, 'sent');
   };
 

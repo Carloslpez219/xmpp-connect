@@ -115,32 +115,32 @@ export class HomePage implements OnInit {
     return await modal.present();
   }
 
-  // async deleteAccount() {
-  //   const alert = await this.alertController.create({
-  //     header: 'Eliminar Cuenta',
-  //     message: '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.',
-  //     buttons: [
-  //       {
-  //         text: 'Cancelar',
-  //         role: 'cancel',
-  //         handler: () => {
-  //           console.log('Eliminación de cuenta cancelada');
-  //         }
-  //       },
-  //       {
-  //         text: 'Eliminar',
-  //         handler: () => {
-  //           this.xmppService.deleteAccount(() => {
-  //             console.log('Cuenta eliminada exitosamente');
-  //             this.logOut();
-  //           }, this.onError.bind(this));
-  //         }
-  //       }
-  //     ]
-  //   });
+  async deleteAccount() {
+    const alert = await this.alertController.create({
+      header: 'Eliminar Cuenta',
+      message: '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            console.log('Eliminación de cuenta cancelada');
+          }
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            this.xmppService.deleteAccount(() => {
+              console.log('Cuenta eliminada exitosamente');
+              this.logOut();
+            })
+          }
+        }
+      ]
+    });
   
-  //   await alert.present();
-  // }
+    await alert.present();
+  }
 
   logOut() {
     this.storage.clear();
