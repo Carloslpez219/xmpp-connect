@@ -1,10 +1,8 @@
-import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IonicModule, LoadingController, ModalController, Platform } from '@ionic/angular';
-import { DataService, Message } from '../services/data.service';
-import { Storage } from '@ionic/storage-angular';
+import { LoadingController, ModalController } from '@ionic/angular';
 import { XmppService } from '../services/xmpp.service';
+import { Storage } from '@ionic/storage-angular';
 import { ContactDetailsPage } from '../contact-details/contact-details.page';
 
 @Component({
@@ -22,16 +20,25 @@ export class ViewMessagePage implements OnInit {
   datosUsuario: any;
   id: any;
 
+  selectedFile!: File;
+
+  constructor(
+    private loadingController: LoadingController,
+    private storage: Storage,
+    private xmppService: XmppService,
+    private modalController: ModalController
+  ) {
+    this.datosUsuario = this.storage.get('datos');
+  }
+
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe(params => {
       this.id = params.get('jid');
-      console.log('JID obtenido de la ruta:', this.id);
       if (this.id) {
         this.loadMessages(this.id);
       }
     });
   
-    // Suscribirse para recibir mensajes en tiempo real
     this.xmppService.messages$.subscribe(messageHistory => {
       if (this.id && messageHistory[this.id]) {
         this.messages = messageHistory[this.id];
@@ -39,19 +46,6 @@ export class ViewMessagePage implements OnInit {
       }
       this.scrollToBottom();
     });
-  }
-  
-
-  selectedFile!: File;
-
-  constructor(
-    private loadingController: LoadingController,
-    private platform: Platform,
-    private storage: Storage,
-    private xmppService: XmppService,
-    private modalController: ModalController
-  ) {
-    this.datosUsuario = this.storage.get('datos');
   }
 
   ionViewDidEnter() {
@@ -64,8 +58,6 @@ export class ViewMessagePage implements OnInit {
     scrollElement.scrollTop = scrollElement.scrollHeight;
   }
 
-
-
   sendMessage() {
     if (this.message.trim()) {
       this.xmppService.sendMessage(this.id, this.message);
@@ -74,11 +66,9 @@ export class ViewMessagePage implements OnInit {
     }
     this.scrollToBottom();
   }
-  
 
   private loadMessages(jid: string) {
     this.messages = this.xmppService.fetchMessageHistory(jid);
-    console.log(this.messages)
     this.scrollToBottom();
   }
 
@@ -90,7 +80,6 @@ export class ViewMessagePage implements OnInit {
     });
     return await modal.present();
   }
-  
 
   triggerFileInput() {
     this.fileInput.nativeElement.click();
@@ -106,16 +95,10 @@ export class ViewMessagePage implements OnInit {
   }
 
   async uploadFile() {
-    if (this.selectedFile) {
-      // Aquí iría la lógica para subir el archivo usando tu servicio XMPP
+    if (this.selectedFile && this.id) {
+      this.xmppService.sendFile(this.id, this.selectedFile);
       console.log('Archivo seleccionado para enviar:', this.selectedFile.name);
-      // Después de subir, podrías actualizar la lista de mensajes o realizar otra acción
       this.scrollToBottom();
     }
   }
-
-
-
-
-
 }
