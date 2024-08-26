@@ -10,14 +10,23 @@ export class GuardGuard implements CanActivate {
   constructor(private router: Router, private storage: Storage){}
 
   async canActivate() {
-    this.storage.create();
+    // Asegura que el almacenamiento esté creado o inicializado antes de realizar cualquier operación.
+    await this.storage.create();
+    
+    // Intenta obtener los datos del usuario almacenados en el almacenamiento.
     const datosUsuario = await this.storage.get('datos');
-    if ( datosUsuario ) {
+    
+    // Verifica si los datos del usuario están presentes.
+    if (datosUsuario) {
+      // Si los datos del usuario existen, permite la navegación a la ruta solicitada.
       return true;
-    }else{
+    } else {
+      // Si los datos del usuario no están presentes, redirige al usuario a la página de inicio de sesión.
       this.router.navigateByUrl('/login');
+      // Niega el acceso a la ruta solicitada.
       return false;
     }
   }
+  
 
 }

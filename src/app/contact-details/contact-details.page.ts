@@ -28,7 +28,7 @@ export class ContactDetailsPage implements OnInit {
   loadContactDetails(jid: string) {
     const contact = this.xmppService.roster[jid];
     if (contact) {
-      this.contactName = contact.name || 'Nombre no disponible';  // Puedes agregar un campo "name" en tu roster si lo tienes
+      this.contactName = contact.name || 'Nombre no disponible';
       this.contactStatus = contact.status || 'offline';
       this.contactStatusMessage = contact.statusMessage || 'Sin mensaje de estado';
     } else {

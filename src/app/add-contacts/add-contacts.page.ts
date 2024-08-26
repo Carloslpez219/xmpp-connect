@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   selector: 'app-add-contacts',
@@ -11,18 +12,18 @@ export class AddContactsPage implements OnInit {
   newContactEmail: string = '';
   contacts: string[] = [];  // Lista para almacenar múltiples contactos
   groupName: string = '';  // Nombre del grupo
-  groupJid: string = '';   // JID del grupo (opcional)
+  groupJid: string = '';   // JID del grupo
 
-  constructor(private modalController: ModalController) {}
+  constructor(private modalController: ModalController, private alertService: AlertService) {}
 
   ngOnInit() {}
 
   addContact() {
     if (this.newContactEmail.trim() !== '') {
       this.contacts.push(this.newContactEmail.trim());
-      this.newContactEmail = '';  // Limpiar el campo después de agregar
+      this.newContactEmail = '';
     } else {
-      console.error('El email no puede estar vacío.');
+      this.alertService.presentToast('El email no puede estar vacío.', 'danger', 2000);
     }
   }
 
@@ -40,7 +41,7 @@ export class AddContactsPage implements OnInit {
       };
       this.modalController.dismiss(groupData);
     } else {
-      console.error('Debes proporcionar un nombre de grupo y al menos un contacto.');
+      this.alertService.presentToast('Debes proporcionar un nombre de grupo y al menos un contacto.', 'danger', 2000);
     }
   }
 

@@ -9,7 +9,7 @@ import { XmppService } from '../services/xmpp.service';
 })
 export class PrecenseModalPage implements OnInit {
 
-  sessionName: string = 'Usuario';  // Aquí puedes usar el nombre real de la sesión si lo tienes
+  sessionName: string = 'Usuario';
   sessionJid: string = '';
   selectedStatus: string = 'online';
   statusMessage: string = '';
@@ -17,7 +17,7 @@ export class PrecenseModalPage implements OnInit {
   constructor(private modalController: ModalController, private xmppService: XmppService) {}
 
   ngOnInit() {
-    // Suponiendo que el XMPP Service tiene el jid de la sesión actual
+    //jid de la sesión actual
     this.sessionJid = this.xmppService.jid;
   }
 

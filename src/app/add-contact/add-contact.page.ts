@@ -1,5 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { AlertService } from '../services/alert.service';
 
 @Component({
   selector: 'app-add-contact',
@@ -10,7 +11,7 @@ export class AddContactPage implements OnInit {
 
   newContactEmail: string = '';
 
-  constructor(private modalCotroller: ModalController) {}
+  constructor(private modalCotroller: ModalController, private alertSerice: AlertService) {}
 
   ngOnInit() {
     
@@ -20,7 +21,7 @@ export class AddContactPage implements OnInit {
     if (this.newContactEmail.trim() !== '') {
       this.modalCotroller.dismiss(this.newContactEmail)
     } else {
-      console.error('El email no puede estar vacío.');
+      this.alertSerice.presentToast('El email no puede estar vacío.', 'danger', 2000);
     }
   }
 
