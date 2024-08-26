@@ -66,7 +66,7 @@ Para poder ejecutar esta aplicación, necesitarás tener instalados los siguient
 - **Angular CLI** (v11 o superior)
 - **Servidor XMPP**: Necesitarás un servidor XMPP con soporte para websockets. Puedes utilizar un servidor público o instalar uno propio como **Ejabberd** o **Openfire**.
 
-## Instalación
+### Instalación
 
 Sigue estos pasos para instalar y ejecutar la aplicación en tu entorno local:
 
@@ -80,66 +80,63 @@ Sigue estos pasos para instalar y ejecutar la aplicación en tu entorno local:
    ```bash
    npm install
 
-## Instalación
 
-1. **Instala las dependencias**:
+### Configura el servidor XMPP: 
+
+Asegúrate de tener un servidor XMPP en funcionamiento con soporte para websockets. Configura la URL del servidor en el archivo xmpp.service.ts en la variable de conexión.
+
+##
+1. **Ejecuta la aplicación**:
    ```bash
-   npm install
-Configura el servidor XMPP: Asegúrate de tener un servidor XMPP en funcionamiento con soporte para websockets. Configura la URL del servidor en el archivo xmpp.service.ts en la variable de conexión.
-Ejecuta la aplicación:
-bash
-Copy code
-ionic serve
-Esto iniciará un servidor local de desarrollo y abrirá la aplicación en tu navegador por defecto.
-Uso
+   ionic serve
 
-Conexión al Servidor XMPP
+
+Esto iniciará un servidor local de desarrollo y abrirá la aplicación en tu navegador por defecto.
+
+
+## Uso
+
+## Conexión al Servidor XMPP
 Al abrir la aplicación, serás dirigido a una pantalla de inicio de sesión donde deberás ingresar tu JID y contraseña.
 Después de autenticarse con éxito, serás redirigido a la pantalla principal, donde podrás ver tu lista de contactos.
-Envío de Mensajes
+
+## Envío de Mensajes
 Selecciona un contacto:
 En la pantalla principal, selecciona un contacto de tu lista para abrir la vista de conversación.
 Escribe un mensaje:
 En el campo de texto, escribe tu mensaje y presiona el botón de enviar.
 Historial de mensajes:
 El historial de mensajes con ese contacto se actualizará automáticamente para mostrar tanto los mensajes enviados como los recibidos.
-Gestión de Contactos
+
+## Gestión de Contactos
 Agregar un contacto:
 Haz clic en el botón para agregar un contacto, ingresa el JID del contacto en el modal y confirma la acción.
 Ver detalles de un contacto:
 Mantén presionado un contacto en la lista para ver los detalles del mismo, incluyendo su estado de presencia.
-Configuración de Presencia
+
+## Configuración de Presencia
 Abrir el modal de presencia:
 Haz clic en tu avatar o nombre de usuario en la parte superior de la pantalla para abrir el modal de configuración de presencia.
 Selecciona tu estado:
 Selecciona entre los estados disponibles (online, away, offline) y, opcionalmente, ingresa un mensaje personalizado.
-Gestión de Grupos
+
+## Gestión de Grupos
 Crear un grupo:
 Utiliza el modal de agregar contactos para seleccionar múltiples contactos y crear un grupo.
 Unirse a un grupo:
 Acepta invitaciones a grupos a través de las alertas mostradas en la aplicación.
-Tecnologías Utilizadas
 
-Ionic Framework: Utilizado para la creación de la interfaz de usuario de la aplicación, permitiendo una experiencia nativa en múltiples plataformas.
-Angular: Framework estructural para desarrollar aplicaciones web dinámicas.
-Strophe.js: Biblioteca JavaScript para conectar y comunicar con servidores XMPP. Facilita la autenticación, el envío de mensajes, y la gestión de presencia.
-XMPP: Protocolo estándar abierto para la mensajería instantánea y la comunicación en tiempo real basado en XML.
+### Tecnologías Utilizadas
+
+- **Ionic Framework:**
+ Utilizado para la creación de la interfaz de usuario de la aplicación, permitiendo una experiencia nativa en múltiples plataformas.
+
+- **Angular:**
+ Framework estructural para desarrollar aplicaciones web dinámicas.
+
+- **Strophe JS:**
+ Biblioteca JavaScript para conectar y comunicar con servidores XMPP. Facilita la autenticación, el envío de mensajes, y la gestión de presencia.
+
+- **XMPP:**
+ Protocolo estándar abierto para la mensajería instantánea y la comunicación en tiempo real basado en XML.
 Contribución
-
-Si deseas contribuir a este proyecto, sigue estos pasos:
-
-Haz un fork del repositorio:
-Esto creará una copia de este proyecto en tu cuenta de GitHub.
-Crea una rama nueva para tu característica o corrección:
-bash
-Copy code
-git checkout -b feature/nueva-caracteristica
-Realiza los cambios necesarios en tu rama y realiza commit:
-bash
-Copy code
-git commit -m "Descripción de los cambios"
-Sube tus cambios a tu repositorio en GitHub:
-bash
-Copy code
-git push origin feature/nueva-caracteristica
-Crea un Pull Request desde tu repositorio forkeado hacia el repositorio original.
