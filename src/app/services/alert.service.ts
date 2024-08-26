@@ -44,15 +44,20 @@ export class AlertService {
    * @param duration La duración en milisegundos que el toast debe permanecer en pantalla.
    */
    async presentToastMessage(message: any, color: any, duration: any) {
+    // Truncar el mensaje si es demasiado largo
+    const maxLength = 50; // Longitud máxima que quieres mostrar en el toast
+    const truncatedMessage = message.length > maxLength ? message.substring(0, maxLength) + '...' : message;
+  
     const toast = await this.toastController.create({
       position: 'top',
       icon: 'chatbubble-ellipses-outline',
-      message,
+      message: truncatedMessage, // Mostrar el mensaje truncado
       duration, // Duración del toast en milisegundos
       color // Color del toast
     });
     toast.present(); // Muestra el toast en la pantalla
-  }  
+  }
+  
 
   /**
    * Muestra una alerta con dos botones, 'Cancelar' y 'Aceptar', con manejadores de eventos.

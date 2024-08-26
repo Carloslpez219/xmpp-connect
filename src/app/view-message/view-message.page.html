@@ -16,10 +16,7 @@
 <ion-content [fullscreen]="true">
   <div #chatContainer class="contenedor-mensajes">
     <div *ngFor="let mensaje of messages">
-      <div [ngClass]="{'mensaje-enviado': mensaje.type === 'sent', 'mensaje-recibido': mensaje.type === 'received'}">
-        {{ mensaje.message }}
-        <div class="tiempo">{{ mensaje.registrado }}</div>
-      </div>
+      <div [ngClass]="{'mensaje-enviado': mensaje.type === 'sent', 'mensaje-recibido': mensaje.type === 'received'}" [innerHTML]="mensaje.message"></div>
     </div>
   </div>
 </ion-content>

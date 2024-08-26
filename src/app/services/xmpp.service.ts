@@ -118,17 +118,34 @@ export class XmppService {
   handleMessage(message: any) {
     const from = message.getAttribute('from');
     const bodyElements = message.getElementsByTagName('body');
+    const fileElements = message.getElementsByTagName('file');
+    const filenameElements = message.getElementsByTagName('filename');
+  
+    let body = '';
   
     if (bodyElements.length > 0) {
-      const body = bodyElements[0].textContent;
-
+      body = bodyElements[0].textContent;
       this.alertService.presentToastMessage(`${from}: ${body}`, 'light', 3000);
-
-      this.addMessageToHistory(from, body, 'received');
     }
+  
+    if (fileElements.length > 0 && filenameElements.length > 0) {
+      const base64Data = fileElements[0].textContent;
+      const filename = filenameElements[0].textContent;
+      
+      // Crear un enlace de descarga
+      const fileUrl = `data:application/octet-stream;base64,${base64Data}`;
+      const downloadLink = `<a href="${fileUrl}" download="${filename}">Download ${filename}</a>`;
+  
+      // Agregar el enlace al cuerpo del mensaje
+      body += `<br>${downloadLink}`;
+      this.alertService.presentToastMessage(`${from}: ${body}`, 'light', 3000);
+    }
+  
+    this.addMessageToHistory(from, body, 'received');
   
     return true;
   }
+  
   
   /**
    * Agrega un mensaje a la historia de mensajes.
